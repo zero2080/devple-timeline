@@ -8,17 +8,30 @@ export class DataService {
   private static caseCache: Map<string, Case> = new Map();
 
   /**
-   * JSON 파일에서 사건 데이터 로드
+   * JSON 파일에서 사건 데이터 로드 (듀얼 타임라인 우선)
    */
-  static async loadCase(caseId: string): Promise<Case> {
+  static async loadCase(caseId: string, useDual: boolean = true): Promise<Case> {
     // 캐시 확인
-    if (this.caseCache.has(caseId)) {
-      return this.caseCache.get(caseId)!;
+    const cacheKey = useDual ? `${caseId}-dual` : caseId;
+    if (this.caseCache.has(cacheKey)) {
+      return this.caseCache.get(cacheKey)!;
     }
 
     try {
-      // Dynamic import로 JSON 로드
-      const data: CaseData = await import(`../../data/cases/${caseId}.json`);
+      // 듀얼 타임라인 파일 우선 시도
+      let data: CaseData;
+      if (useDual) {
+        try {
+          data = await import(`../../data/cases/${caseId}-dual.json`);
+        } catch {
+          // 듀얼 파일 없으면 일반 파일 로드
+          console.warn(`Dual timeline not found for ${caseId}, falling back to standard file`);
+          data = await import(`../../data/cases/${caseId}.json`);
+        }
+      } else {
+        data = await import(`../../data/cases/${caseId}.json`);
+      }
+
       const caseInstance = new Case(data);
 
       // 유효성 검증
@@ -27,7 +40,7 @@ export class DataService {
       }
 
       // 캐시 저장
-      this.caseCache.set(caseId, caseInstance);
+      this.caseCache.set(cacheKey, caseInstance);
       return caseInstance;
     } catch (error) {
       console.error(`Failed to load case: ${caseId}`, error);
