@@ -1,11 +1,15 @@
 import { useState, useEffect, useRef, useCallback, useMemo, type MouseEvent as ReactMouseEvent } from "react";
 import type { Case } from '../core/models/Case';
-import type { Relation, InteractionState, GraphSize, PanState } from '../types';
+import type { Relation, InteractionState, GraphSize, PanState, TimelineMode } from '../types';
 import { Header } from '../components/Layout/Header';
 import { Legend } from '../components/Layout/Legend';
 import { TimelineScrubber } from '../components/Timeline/TimelineScrubber';
+import { TimelineModeToggle } from '../components/Timeline/TimelineModeToggle';
+import { InvestigationPlayer } from '../components/Timeline/InvestigationPlayer';
 import { ZoomControls } from '../components/Graph/ZoomControls';
 import { ArrowMarker } from '../components/Graph/ArrowMarker';
+import { InvestigationLog } from '../components/Sidebar/InvestigationLog';
+import { EventTimelineLog } from '../components/Sidebar/EventTimelineLog';
 import { useForceSimulation } from '../hooks/useForceSimulation';
 
 interface DetectiveBoardProps {
@@ -13,7 +17,23 @@ interface DetectiveBoardProps {
 }
 
 export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
+  // 타임라인 모드
+  const hasDualTimeline = caseData.hasDualTimeline();
+  const [timelineMode, setTimelineMode] = useState<TimelineMode>(hasDualTimeline ? 'dual' : 'event');
+  
+  // 사건 타임라인 (기존)
   const [currentDay, setCurrentDay] = useState(0);
+  
+  // 수사 타임라인 (새로 추가)
+  const maxDiscoveryDay = useMemo(() => {
+    if (!hasDualTimeline) return 0;
+    const entries = caseData.investigationTimeline;
+    return entries.length > 0 ? Math.max(...entries.map((e) => e.discoveryDay)) : 0;
+  }, [caseData, hasDualTimeline]);
+  
+  const [currentDiscoveryDay, setCurrentDiscoveryDay] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  
   const [selectedNode, setSelectedNode] = useState<number | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Relation | null>(null);
   const [showLegend, setShowLegend] = useState(false);
@@ -218,20 +238,41 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
       <Header meta={caseData.meta} />
 
       <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 80px)" }}>
-        <TimelineScrubber
-          currentDay={currentDay}
-          maxDay={caseData.maxDay}
-          onDayChange={(d) => {
-            setCurrentDay(d);
-            setSelectedEdge(null);
-          }}
-          events={caseData.events}
-          timelinePoints={caseData.timeline}
-        />
+        {/* 타임라인 컨트롤 */}
+        <div style={{ padding: "12px 24px", background: "var(--detective-bg-secondary)", borderBottom: "1px solid var(--detective-border-primary)", display: "flex", alignItems: "center", gap: 12 }}>
+          <TimelineModeToggle
+            mode={timelineMode}
+            onModeChange={setTimelineMode}
+            hasDualTimeline={hasDualTimeline}
+          />
+          
+          {hasDualTimeline && timelineMode === 'investigation' && (
+            <InvestigationPlayer
+              maxDiscoveryDay={maxDiscoveryDay}
+              currentDiscoveryDay={currentDiscoveryDay}
+              onDiscoveryDayChange={setCurrentDiscoveryDay}
+              isPlaying={isPlaying}
+              onPlayToggle={() => setIsPlaying(!isPlaying)}
+            />
+          )}
+        </div>
+
+        {(timelineMode === 'event' || !hasDualTimeline) && (
+          <TimelineScrubber
+            currentDay={currentDay}
+            maxDay={caseData.maxDay}
+            onDayChange={(d) => {
+              setCurrentDay(d);
+              setSelectedEdge(null);
+            }}
+            events={caseData.events}
+            timelinePoints={caseData.timeline}
+          />
+        )}
 
         <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
           {/* Graph canvas */}
-          <div ref={containerRef} style={{ flex: 1, position: "relative", minHeight: 400, overflow: "hidden" }}>
+          <div ref={containerRef} style={{ flex: timelineMode === 'dual' ? 2 : 1, position: "relative", minHeight: 400, overflow: "hidden" }}>
             <svg
               ref={svgRef}
               width={graphSize.w}
@@ -455,213 +496,240 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
             </div>
           </div>
 
-          {/* Side Panel (임시 축약 버전 - 추후 분리) */}
+          {/* Side Panel */}
           <div
             style={{
-              width: 280,
+              width: timelineMode === 'dual' ? 320 : 280,
               borderLeft: "1px solid var(--detective-border-primary)",
               background: "var(--detective-bg-secondary)",
               overflowY: "auto",
               flexShrink: 0,
             }}
           >
-            {person && (
-              <div style={{ padding: 16, borderBottom: "1px solid var(--detective-border-secondary)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <span style={{ fontSize: 24 }}>{person.icon}</span>
-                  <div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: person.color }}>{person.name}</div>
-                    <div style={{ fontSize: 11, color: "var(--detective-text-tertiary)" }}>{person.desc}</div>
-                  </div>
-                </div>
-                <div style={{ fontSize: 11, color: "var(--detective-text-tertiary)", marginBottom: 10 }}>
-                  현재 시점 연결: {nodeConnections.length}건
-                </div>
-                {nodeConnections.map((e, i) => {
-                  const other = e.source === selectedNode ? e.target : e.source;
-                  const otherP = caseData.getEntityById(other);
-                  const st = caseData.config.relationStyles[e.type];
+            {/* 듀얼 모드일 때 수사/사건 타임라인 표시 */}
+            {hasDualTimeline && timelineMode === 'investigation' && (
+              <InvestigationLog
+                entries={caseData.investigationTimeline}
+                currentDiscoveryDay={currentDiscoveryDay}
+              />
+            )}
 
-                  return (
+            {hasDualTimeline && timelineMode === 'dual' && (
+              <>
+                <InvestigationLog
+                  entries={caseData.investigationTimeline}
+                  currentDiscoveryDay={currentDiscoveryDay}
+                />
+                <div style={{ borderTop: '2px solid var(--detective-border-primary)', margin: '8px 0' }} />
+                <EventTimelineLog
+                  caseData={caseData}
+                  currentDiscoveryDay={currentDiscoveryDay}
+                />
+              </>
+            )}
+
+            {/* 기존 사이드바 (event 모드 또는 듀얼 타임라인 없을 때) */}
+            {(!hasDualTimeline || timelineMode === 'event') && (
+              <>
+                {person && (
+                  <div style={{ padding: 16, borderBottom: "1px solid var(--detective-border-secondary)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                      <span style={{ fontSize: 24 }}>{person.icon}</span>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: person.color }}>{person.name}</div>
+                        <div style={{ fontSize: 11, color: "var(--detective-text-tertiary)" }}>{person.desc}</div>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--detective-text-tertiary)", marginBottom: 10 }}>
+                      현재 시점 연결: {nodeConnections.length}건
+                    </div>
+                    {nodeConnections.map((e, i) => {
+                      const other = e.source === selectedNode ? e.target : e.source;
+                      const otherP = caseData.getEntityById(other);
+                      const st = caseData.config.relationStyles[e.type];
+
+                      return (
+                        <div
+                          key={i}
+                          style={{
+                            padding: "6px 8px",
+                            marginBottom: 4,
+                            borderRadius: 4,
+                            background: "var(--detective-bg-tertiary)",
+                            border: "1px solid var(--detective-border-secondary)",
+                            fontSize: 11,
+                            cursor: "pointer",
+                          }}
+                          onClick={() => setSelectedEdge(e)}
+                        >
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ color: st.color }}>→ {otherP?.name}</span>
+                            <span style={{ color: "var(--detective-text-tertiary)", fontSize: 10 }}>{e.label}</span>
+                          </div>
+                          <div style={{ display: "flex", gap: 6, marginTop: 3 }}>
+                            <span
+                              style={{
+                                fontSize: 9,
+                                padding: "1px 5px",
+                                borderRadius: 3,
+                                background: st.color + "22",
+                                color: st.color,
+                              }}
+                            >
+                              {st.label}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: 9,
+                                padding: "1px 5px",
+                                borderRadius: 3,
+                                background: "#ffffff11",
+                                color: "var(--detective-text-tertiary)",
+                              }}
+                            >
+                              강도 {Math.round(e.strength * 100)}%
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {selectedEdge && (
+                  <div style={{ padding: 16, borderBottom: "1px solid var(--detective-border-secondary)" }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "var(--detective-text-secondary)", marginBottom: 10 }}>
+                      🔗 관계 변화 추적
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: caseData.config.relationStyles[selectedEdge.type].color,
+                        marginBottom: 4,
+                      }}
+                    >
+                      {caseData.getEntityById(selectedEdge.source)?.name} ↔{" "}
+                      {caseData.getEntityById(selectedEdge.target)?.name}
+                    </div>
+                    <div style={{ marginTop: 10 }}>
+                      {getEdgeHistory(selectedEdge.source, selectedEdge.target).map((h, i) => {
+                        const isActive = h.day <= currentDay;
+                        const isCurrentSnap = caseData.getRelationsAtDay(currentDay) === caseData.getRelationsAtDay(h.day);
+
+                        return (
+                          <div
+                            key={i}
+                            style={{
+                              position: "relative",
+                              paddingLeft: 16,
+                              paddingBottom: 12,
+                              borderLeft: `2px solid ${
+                                isCurrentSnap
+                                  ? "#ffa502"
+                                  : isActive
+                                  ? "var(--detective-border-tertiary)"
+                                  : "var(--detective-border-secondary)"
+                              }`,
+                              opacity: isActive ? 1 : 0.35,
+                            }}
+                          >
+                            <div
+                              style={{
+                                position: "absolute",
+                                left: -5,
+                                top: 0,
+                                width: 8,
+                                height: 8,
+                                borderRadius: "50%",
+                                background: isCurrentSnap
+                                  ? "#ffa502"
+                                  : isActive
+                                  ? "var(--detective-border-tertiary)"
+                                  : "var(--detective-border-secondary)",
+                              }}
+                            />
+                            <div
+                              style={{
+                                fontSize: 10,
+                                color: isCurrentSnap ? "var(--detective-text-highlight)" : "var(--detective-text-tertiary)",
+                                marginBottom: 2,
+                              }}
+                            >
+                              {h.label}
+                            </div>
+                            {h.relations.map((r, j) => (
+                              <div
+                                key={j}
+                                style={{
+                                  fontSize: 11,
+                                  color: caseData.config.relationStyles[r.type].color,
+                                  padding: "2px 6px",
+                                  marginBottom: 2,
+                                  background: isCurrentSnap ? caseData.config.relationStyles[r.type].color + "11" : "transparent",
+                                  borderRadius: 3,
+                                }}
+                              >
+                                {r.label}
+                                <span style={{ color: "var(--detective-text-tertiary)", marginLeft: 4, fontSize: 9 }}>
+                                  ({r.direction === "bi" ? "양방향" : "단방향"} · {Math.round(r.strength * 100)}%)
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 수사 기록 */}
+                <div style={{ padding: 16 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--detective-text-secondary)", marginBottom: 10 }}>
+                    📝 수사 기록 <span style={{ fontWeight: 400, color: "var(--detective-text-tertiary)", fontSize: 10 }}>({currentEvents.length}건)</span>
+                  </div>
+                  {currentEvents.length === 0 && (
+                    <div style={{ fontSize: 11, color: "var(--detective-text-tertiary)", fontStyle: "italic" }}>
+                      해당 시점 기록 없음
+                    </div>
+                  )}
+                  {[...currentEvents].reverse().map((ev, i) => (
                     <div
                       key={i}
                       style={{
+                        fontSize: 11,
+                        color: "var(--detective-text-secondary)",
                         padding: "6px 8px",
                         marginBottom: 4,
                         borderRadius: 4,
                         background: "var(--detective-bg-tertiary)",
-                        border: "1px solid var(--detective-border-secondary)",
-                        fontSize: 11,
-                        cursor: "pointer",
+                        borderLeft: "2px solid #ffa50244",
+                        lineHeight: 1.5,
                       }}
-                      onClick={() => setSelectedEdge(e)}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ color: st.color }}>→ {otherP?.name}</span>
-                        <span style={{ color: "var(--detective-text-tertiary)", fontSize: 10 }}>{e.label}</span>
-                      </div>
-                      <div style={{ display: "flex", gap: 6, marginTop: 3 }}>
-                        <span
-                          style={{
-                            fontSize: 9,
-                            padding: "1px 5px",
-                            borderRadius: 3,
-                            background: st.color + "22",
-                            color: st.color,
-                          }}
-                        >
-                          {st.label}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 9,
-                            padding: "1px 5px",
-                            borderRadius: 3,
-                            background: "#ffffff11",
-                            color: "var(--detective-text-tertiary)",
-                          }}
-                        >
-                          강도 {Math.round(e.strength * 100)}%
-                        </span>
-                      </div>
+                      <span style={{ color: "#ffa502", fontSize: 9, marginRight: 6, fontFamily: "var(--font-mono)" }}>
+                        D-{caseData.maxDay - ev.day}
+                      </span>
+                      {ev.text}
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                  ))}
+                </div>
 
-            {selectedEdge && (
-              <div style={{ padding: 16, borderBottom: "1px solid var(--detective-border-secondary)" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "var(--detective-text-secondary)", marginBottom: 10 }}>
-                  🔗 관계 변화 추적
-                </div>
-                <div
-                  style={{
-                    fontSize: 13,
-                    color: caseData.config.relationStyles[selectedEdge.type].color,
-                    marginBottom: 4,
-                  }}
-                >
-                  {caseData.getEntityById(selectedEdge.source)?.name} ↔{" "}
-                  {caseData.getEntityById(selectedEdge.target)?.name}
-                </div>
-                <div style={{ marginTop: 10 }}>
-                  {getEdgeHistory(selectedEdge.source, selectedEdge.target).map((h, i) => {
-                    const isActive = h.day <= currentDay;
-                    const isCurrentSnap = caseData.getRelationsAtDay(currentDay) === caseData.getRelationsAtDay(h.day);
-
-                    return (
-                      <div
-                        key={i}
-                        style={{
-                          position: "relative",
-                          paddingLeft: 16,
-                          paddingBottom: 12,
-                          borderLeft: `2px solid ${
-                            isCurrentSnap
-                              ? "#ffa502"
-                              : isActive
-                              ? "var(--detective-border-tertiary)"
-                              : "var(--detective-border-secondary)"
-                          }`,
-                          opacity: isActive ? 1 : 0.35,
-                        }}
-                      >
-                        <div
-                          style={{
-                            position: "absolute",
-                            left: -5,
-                            top: 0,
-                            width: 8,
-                            height: 8,
-                            borderRadius: "50%",
-                            background: isCurrentSnap
-                              ? "#ffa502"
-                              : isActive
-                              ? "var(--detective-border-tertiary)"
-                              : "var(--detective-border-secondary)",
-                          }}
-                        />
-                        <div
-                          style={{
-                            fontSize: 10,
-                            color: isCurrentSnap ? "var(--detective-text-highlight)" : "var(--detective-text-tertiary)",
-                            marginBottom: 2,
-                          }}
-                        >
-                          {h.label}
-                        </div>
-                        {h.relations.map((r, j) => (
-                          <div
-                            key={j}
-                            style={{
-                              fontSize: 11,
-                              color: caseData.config.relationStyles[r.type].color,
-                              padding: "2px 6px",
-                              marginBottom: 2,
-                              background: isCurrentSnap ? caseData.config.relationStyles[r.type].color + "11" : "transparent",
-                              borderRadius: 3,
-                            }}
-                          >
-                            {r.label}
-                            <span style={{ color: "var(--detective-text-tertiary)", marginLeft: 4, fontSize: 9 }}>
-                              ({r.direction === "bi" ? "양방향" : "단방향"} · {Math.round(r.strength * 100)}%)
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* 수사 기록 */}
-            <div style={{ padding: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--detective-text-secondary)", marginBottom: 10 }}>
-                📝 수사 기록 <span style={{ fontWeight: 400, color: "var(--detective-text-tertiary)", fontSize: 10 }}>({currentEvents.length}건)</span>
-              </div>
-              {currentEvents.length === 0 && (
-                <div style={{ fontSize: 11, color: "var(--detective-text-tertiary)", fontStyle: "italic" }}>
-                  해당 시점 기록 없음
-                </div>
-              )}
-              {[...currentEvents].reverse().map((ev, i) => (
-                <div
-                  key={i}
-                  style={{
-                    fontSize: 11,
-                    color: "var(--detective-text-secondary)",
-                    padding: "6px 8px",
-                    marginBottom: 4,
-                    borderRadius: 4,
-                    background: "var(--detective-bg-tertiary)",
-                    borderLeft: "2px solid #ffa50244",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  <span style={{ color: "#ffa502", fontSize: 9, marginRight: 6, fontFamily: "var(--font-mono)" }}>
-                    D-{caseData.maxDay - ev.day}
-                  </span>
-                  {ev.text}
-                </div>
-              ))}
-            </div>
-
-            {!person && !selectedEdge && (
-              <div style={{ padding: 24, textAlign: "center" }}>
-                <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>🔎</div>
-                <div style={{ fontSize: 12, color: "var(--detective-text-tertiary)", lineHeight: 1.6 }}>
-                  인물 노드를 클릭하면
-                  <br />
-                  상세 관계를 확인할 수 있습니다.
-                  <br />
-                  <br />
-                  관계선을 클릭하면
-                  <br />
-                  시간에 따른 변화를 추적합니다.
-                </div>
-              </div>
+                {!person && !selectedEdge && (
+                  <div style={{ padding: 24, textAlign: "center" }}>
+                    <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>🔎</div>
+                    <div style={{ fontSize: 12, color: "var(--detective-text-tertiary)", lineHeight: 1.6 }}>
+                      인물 노드를 클릭하면
+                      <br />
+                      상세 관계를 확인할 수 있습니다.
+                      <br />
+                      <br />
+                      관계선을 클릭하면
+                      <br />
+                      시간에 따른 변화를 추적합니다.
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
