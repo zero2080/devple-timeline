@@ -1,0 +1,570 @@
+{
+  "meta": {
+    "id": "2026-0401",
+    "title": "사건번호 2026-0401",
+    "subtitle": "카페 'Noir' 오너 김태호 살인사건 — 듀얼 타임라인 분석",
+    "category": "detective",
+    "dateRange": {
+      "start": "2025-10-01",
+      "end": "2026-04-01"
+    },
+    "investigationStartDate": "2026-04-01T06:00:00+09:00",
+    "description": "카페 'Noir' 오너 김태호 살인사건의 수사 진행 과정과 실제 사건 재구성"
+  },
+  "entities": [
+    { "id": 1, "name": "김태호", "type": "person", "role": "피해자", "desc": "카페 'Noir' 오너", "color": "#e74c3c", "icon": "☠" },
+    { "id": 2, "name": "박서연", "type": "person", "role": "용의자", "desc": "전 여자친구 / 공동투자자", "color": "#f39c12", "icon": "⚠" },
+    { "id": 3, "name": "이준혁", "type": "person", "role": "용의자", "desc": "사업 경쟁자", "color": "#f39c12", "icon": "⚠" },
+    { "id": 4, "name": "최민지", "type": "person", "role": "용의자", "desc": "카페 직원 / 바리스타", "color": "#f39c12", "icon": "⚠" },
+    { "id": 5, "name": "한도윤", "type": "person", "role": "참고인", "desc": "피해자 대학 동기", "color": "#3498db", "icon": "👤" },
+    { "id": 6, "name": "정은수", "type": "person", "role": "참고인", "desc": "보험 설계사", "color": "#3498db", "icon": "👤" }
+  ],
+  "timeline": [
+    { "day": 0, "label": "6개월 전", "date": "2025.10", "title": "평온한 시기" },
+    { "day": 90, "label": "3개월 전", "date": "2026.01", "title": "균열의 시작" },
+    { "day": 150, "label": "1개월 전", "date": "2026.03", "title": "의심의 단서들" },
+    { "day": 180, "label": "사건 당일", "date": "2026.04.01", "title": "D-Day" }
+  ],
+  "snapshots": {
+    "0": [
+      { "source": 1, "target": 2, "type": "romantic", "direction": "bi", "strength": 0.9, "label": "연인" },
+      { "source": 1, "target": 2, "type": "business", "direction": "bi", "strength": 0.7, "label": "공동투자" },
+      { "source": 1, "target": 3, "type": "business", "direction": "bi", "strength": 0.6, "label": "사업 협력" },
+      { "source": 1, "target": 4, "type": "work", "direction": "uni", "strength": 0.5, "label": "고용주→직원" },
+      { "source": 1, "target": 5, "type": "friendship", "direction": "bi", "strength": 0.8, "label": "절친" },
+      { "source": 4, "target": 5, "type": "romantic", "direction": "bi", "strength": 0.3, "label": "썸" }
+    ],
+    "90": [
+      { "source": 1, "target": 2, "type": "conflict", "direction": "bi", "strength": 0.7, "label": "투자금 분쟁" },
+      { "source": 1, "target": 3, "type": "conflict", "direction": "bi", "strength": 0.8, "label": "경쟁 카페 오픈" },
+      { "source": 1, "target": 4, "type": "work", "direction": "uni", "strength": 0.5, "label": "고용주→직원" },
+      { "source": 1, "target": 5, "type": "friendship", "direction": "bi", "strength": 0.7, "label": "고민 상담" },
+      { "source": 2, "target": 3, "type": "suspicious", "direction": "uni", "strength": 0.4, "label": "접촉 시작?" },
+      { "source": 4, "target": 5, "type": "romantic", "direction": "bi", "strength": 0.5, "label": "연인" }
+    ],
+    "150": [
+      { "source": 1, "target": 2, "type": "conflict", "direction": "bi", "strength": 0.9, "label": "법적 분쟁 예고" },
+      { "source": 1, "target": 3, "type": "conflict", "direction": "uni", "strength": 0.6, "label": "위협 의심" },
+      { "source": 1, "target": 4, "type": "suspicious", "direction": "uni", "strength": 0.6, "label": "내부정보 유출?" },
+      { "source": 1, "target": 5, "type": "friendship", "direction": "bi", "strength": 0.8, "label": "유언장 언급" },
+      { "source": 1, "target": 6, "type": "business", "direction": "bi", "strength": 0.7, "label": "고액 보험 가입" },
+      { "source": 2, "target": 4, "type": "suspicious", "direction": "bi", "strength": 0.8, "label": "비밀 접촉" },
+      { "source": 2, "target": 3, "type": "suspicious", "direction": "bi", "strength": 0.6, "label": "공모 의심" },
+      { "source": 2, "target": 6, "type": "suspicious", "direction": "uni", "strength": 0.5, "label": "보험 수익자 확인" }
+    ],
+    "180": [
+      { "source": 1, "target": 2, "type": "conflict", "direction": "bi", "strength": 1.0, "label": "최후의 통화" },
+      { "source": 1, "target": 3, "type": "conflict", "direction": "uni", "strength": 0.5, "label": "알리바이 불일치" },
+      { "source": 1, "target": 4, "type": "suspicious", "direction": "uni", "strength": 0.9, "label": "마지막 목격자" },
+      { "source": 1, "target": 5, "type": "friendship", "direction": "bi", "strength": 0.8, "label": "부재중 전화 3통" },
+      { "source": 1, "target": 6, "type": "business", "direction": "uni", "strength": 0.8, "label": "사망 보험금 10억" },
+      { "source": 2, "target": 4, "type": "suspicious", "direction": "bi", "strength": 1.0, "label": "당일 만남 확인" },
+      { "source": 2, "target": 3, "type": "suspicious", "direction": "bi", "strength": 0.7, "label": "통화기록 다수" },
+      { "source": 2, "target": 6, "type": "suspicious", "direction": "uni", "strength": 0.9, "label": "보험 수익자=박서연" },
+      { "source": 4, "target": 5, "type": "romantic", "direction": "bi", "strength": 0.4, "label": "관계 흔들림" },
+      { "source": 3, "target": 6, "type": "suspicious", "direction": "uni", "strength": 0.3, "label": "같은 헬스장 회원" }
+    ]
+  },
+  "investigationTimeline": [
+    {
+      "id": "inv-001",
+      "discoveryDate": "2026-04-01T06:00:00+09:00",
+      "discoveryDay": 0,
+      "type": "evidence",
+      "title": "시신 발견",
+      "description": "카페 출근 직원이 김태호 시신 발견. 카페 내부 사무실에서 흉기에 의한 살해 추정.",
+      "relatedEvents": ["evt-014"],
+      "reliability": "확정",
+      "metadata": {
+        "source": "첫 신고",
+        "investigator": "강력1팀",
+        "notes": "사망 시각 초기 추정 불가"
+      }
+    },
+    {
+      "id": "inv-002",
+      "discoveryDate": "2026-04-01T14:00:00+09:00",
+      "discoveryDay": 0,
+      "type": "forensic",
+      "title": "부검 소견서",
+      "description": "사망 추정 시각: 2026-04-01 01:00~02:00. 흉기는 날카로운 칼, 즉사 추정.",
+      "relatedEvents": ["evt-013"],
+      "reliability": "확정",
+      "metadata": {
+        "source": "국립과학수사연구원",
+        "investigator": "법의학팀"
+      }
+    },
+    {
+      "id": "inv-003",
+      "discoveryDate": "2026-04-01T18:00:00+09:00",
+      "discoveryDay": 0,
+      "type": "testimony",
+      "title": "최민지 1차 진술",
+      "description": "전날(3/31) 23:40 퇴근. 이상 없었다고 진술. 당일 새벽 알리바이는 집에서 혼자.",
+      "relatedEvents": ["evt-010"],
+      "reliability": "추정",
+      "metadata": {
+        "source": "최민지 진술서",
+        "investigator": "강력1팀"
+      }
+    },
+    {
+      "id": "inv-004",
+      "discoveryDate": "2026-04-02T10:00:00+09:00",
+      "discoveryDay": 1,
+      "type": "cctv",
+      "title": "카페 출입구 CCTV 확보",
+      "description": "3/31 23:40 최민지 퇴근 확인. 이후 01:15까지 출입 없음. 01:15 후문으로 누군가 진입 (얼굴 불명)",
+      "relatedEvents": ["evt-010"],
+      "reliability": "확정",
+      "metadata": {
+        "source": "CCTV 영상",
+        "notes": "후문 진입자 신원 미확인"
+      }
+    },
+    {
+      "id": "inv-005",
+      "discoveryDate": "2026-04-02T15:00:00+09:00",
+      "discoveryDay": 1,
+      "type": "analysis",
+      "title": "피해자 휴대폰 분석",
+      "description": "3/31 23:52 한도윤에게 부재중 전화 3회. 마지막 통화는 3/30 22:15 박서연과의 통화.",
+      "relatedEvents": ["evt-011", "evt-007"],
+      "reliability": "확정",
+      "metadata": {
+        "source": "통신사 기록"
+      }
+    },
+    {
+      "id": "inv-006",
+      "discoveryDate": "2026-04-03T09:00:00+09:00",
+      "discoveryDay": 2,
+      "type": "testimony",
+      "title": "한도윤 진술",
+      "description": "3/31 밤 김태호로부터 부재중 전화 받았으나 받지 못함. 약 2주 전 '유서를 써뒀다'는 발언 들음.",
+      "relatedEvents": ["evt-011", "evt-008"],
+      "reliability": "확정",
+      "metadata": {
+        "source": "한도윤 진술서"
+      }
+    },
+    {
+      "id": "inv-007",
+      "discoveryDate": "2026-04-03T14:00:00+09:00",
+      "discoveryDay": 2,
+      "type": "document",
+      "title": "보험 계약서 발견",
+      "description": "3/15 김태호 명의 10억 원 생명보험 가입 확인. 수익자: 박서연.",
+      "relatedEvents": ["evt-006"],
+      "reliability": "확정",
+      "metadata": {
+        "source": "보험사 계약서",
+        "investigator": "강력1팀"
+      }
+    },
+    {
+      "id": "inv-008",
+      "discoveryDate": "2026-04-04T11:00:00+09:00",
+      "discoveryDay": 3,
+      "type": "analysis",
+      "title": "통화 기록 전체 분석",
+      "description": "3월 중 박서연-최민지 통화 3회 확인. 4/1 00:15 박서연-최민지 통화 2분 13초.",
+      "relatedEvents": ["evt-007", "evt-012"],
+      "reliability": "확정",
+      "metadata": {
+        "source": "통신사 전체 기록"
+      }
+    },
+    {
+      "id": "inv-009",
+      "discoveryDate": "2026-04-05T10:00:00+09:00",
+      "discoveryDay": 4,
+      "type": "cctv",
+      "title": "주변 CCTV 추가 확보",
+      "description": "3/23 박서연-최민지 카페 근처 커피숍 만남 확인. 약 1시간 대화.",
+      "relatedEvents": ["evt-005"],
+      "reliability": "확정",
+      "metadata": {
+        "source": "주변 상점 CCTV"
+      }
+    },
+    {
+      "id": "inv-010",
+      "discoveryDate": "2026-04-06T09:00:00+09:00",
+      "discoveryDay": 5,
+      "type": "testimony",
+      "title": "익명 제보 - 목격자 추가",
+      "description": "3/23 이전에도 박서연-최민지 만남 목격 제보. 약 3월 초순경 추정.",
+      "relatedEvents": ["evt-004"],
+      "reliability": "추정",
+      "metadata": {
+        "source": "익명 제보",
+        "notes": "정확한 날짜 불명"
+      }
+    },
+    {
+      "id": "inv-011",
+      "discoveryDate": "2026-04-07T14:00:00+09:00",
+      "discoveryDay": 6,
+      "type": "document",
+      "title": "카페 매출 데이터 분석",
+      "description": "3월 하순경 경쟁사(이준혁 카페)로 매출 데이터 유출 정황 발견.",
+      "relatedEvents": ["evt-009"],
+      "reliability": "추정",
+      "metadata": {
+        "source": "디지털 포렌식"
+      }
+    }
+  ],
+  "eventTimeline": [
+    {
+      "id": "evt-001",
+      "text": "김태호, 박서연과 카페 'Noir' 공동 투자 시작",
+      "importance": "medium",
+      "timelineVersions": [
+        {
+          "version": 1,
+          "updatedAt": "2026-04-03T00:00:00+09:00",
+          "updatedByEvidence": ["inv-007"],
+          "timestamp": "2025-10-01T00:00:00+09:00",
+          "day": 0,
+          "precision": "month",
+          "changeReason": "계약서 및 진술로 시기 확인",
+          "changeType": "initial"
+        }
+      ],
+      "currentVersion": 1,
+      "supportedBy": ["inv-007"],
+      "involvedEntities": [1, 2]
+    },
+    {
+      "id": "evt-002",
+      "text": "이준혁과 원두 공동구매 협력 관계",
+      "importance": "low",
+      "timelineVersions": [
+        {
+          "version": 1,
+          "updatedAt": "2026-04-01T00:00:00+09:00",
+          "updatedByEvidence": [],
+          "day": 5,
+          "precision": "day",
+          "changeType": "initial"
+        }
+      ],
+      "currentVersion": 1,
+      "supportedBy": [],
+      "involvedEntities": [1, 3]
+    },
+    {
+      "id": "evt-003",
+      "text": "박서연, 투자금 회수 요구 → 분쟁 시작",
+      "importance": "high",
+      "timelineVersions": [
+        {
+          "version": 1,
+          "updatedAt": "2026-04-01T00:00:00+09:00",
+          "updatedByEvidence": [],
+          "day": 85,
+          "precision": "day",
+          "changeType": "initial"
+        }
+      ],
+      "currentVersion": 1,
+      "supportedBy": [],
+      "involvedEntities": [1, 2]
+    },
+    {
+      "id": "evt-004",
+      "text": "박서연-최민지 첫 비밀 접촉 (추정)",
+      "importance": "high",
+      "timelineVersions": [
+        {
+          "version": 1,
+          "updatedAt": "2026-04-06T09:00:00+09:00",
+          "updatedByEvidence": ["inv-010"],
+          "dateEstimate": {
+            "earliest": "2026-03-01T00:00:00+09:00",
+            "latest": "2026-03-10T00:00:00+09:00",
+            "confidence": "low"
+          },
+          "precision": "day",
+          "changeReason": "익명 제보로 초기 접촉 추정",
+          "changeType": "initial"
+        }
+      ],
+      "currentVersion": 1,
+      "supportedBy": ["inv-010"],
+      "involvedEntities": [2, 4]
+    },
+    {
+      "id": "evt-005",
+      "text": "박서연-최민지 비밀 만남 (CCTV 확인)",
+      "importance": "high",
+      "timelineVersions": [
+        {
+          "version": 1,
+          "updatedAt": "2026-04-05T10:00:00+09:00",
+          "updatedByEvidence": ["inv-009"],
+          "timestamp": "2026-03-23T14:00:00+09:00",
+          "precision": "hour",
+          "changeReason": "주변 CCTV로 정확한 시간 확인",
+          "changeType": "refinement"
+        }
+      ],
+      "currentVersion": 1,
+      "supportedBy": ["inv-009"],
+      "involvedEntities": [2, 4],
+      "metadata": {
+        "location": "카페 근처 커피숍",
+        "duration": "약 1시간"
+      }
+    },
+    {
+      "id": "evt-006",
+      "text": "김태호, 10억 원 생명보험 가입 (수익자: 박서연)",
+      "importance": "high",
+      "timelineVersions": [
+        {
+          "version": 1,
+          "updatedAt": "2026-04-03T14:00:00+09:00",
+          "updatedByEvidence": ["inv-007"],
+          "timestamp": "2026-03-15T00:00:00+09:00",
+          "day": 145,
+          "precision": "day",
+          "changeReason": "보험 계약서로 날짜 확정",
+          "changeType": "initial"
+        }
+      ],
+      "currentVersion": 1,
+      "supportedBy": ["inv-007"],
+      "involvedEntities": [1, 2, 6]
+    },
+    {
+      "id": "evt-007",
+      "text": "김태호-박서연 최후의 통화",
+      "importance": "high",
+      "timelineVersions": [
+        {
+          "version": 1,
+          "updatedAt": "2026-04-02T15:00:00+09:00",
+          "updatedByEvidence": ["inv-005"],
+          "timestamp": "2026-03-30T22:15:00+09:00",
+          "precision": "minute",
+          "changeReason": "통신사 기록으로 정확한 시간 확인",
+          "changeType": "initial"
+        }
+      ],
+      "currentVersion": 1,
+      "supportedBy": ["inv-005"],
+      "involvedEntities": [1, 2]
+    },
+    {
+      "id": "evt-008",
+      "text": "김태호, 한도윤에게 '유서를 써뒀다' 발언",
+      "importance": "high",
+      "timelineVersions": [
+        {
+          "version": 1,
+          "updatedAt": "2026-04-03T09:00:00+09:00",
+          "updatedByEvidence": ["inv-006"],
+          "dateEstimate": {
+            "earliest": "2026-03-15T00:00:00+09:00",
+            "latest": "2026-03-20T00:00:00+09:00",
+            "confidence": "medium"
+          },
+          "day": 158,
+          "precision": "day",
+          "changeReason": "한도윤 진술로 '약 2주 전' 추정",
+          "changeType": "initial"
+        }
+      ],
+      "currentVersion": 1,
+      "supportedBy": ["inv-006"],
+      "involvedEntities": [1, 5]
+    },
+    {
+      "id": "evt-009",
+      "text": "카페 매출 데이터 외부 유출 정황",
+      "importance": "medium",
+      "timelineVersions": [
+        {
+          "version": 1,
+          "updatedAt": "2026-04-07T14:00:00+09:00",
+          "updatedByEvidence": ["inv-011"],
+          "dateEstimate": {
+            "earliest": "2026-03-20T00:00:00+09:00",
+            "latest": "2026-03-31T00:00:00+09:00",
+            "confidence": "low"
+          },
+          "day": 162,
+          "precision": "day",
+          "changeReason": "디지털 포렌식으로 대략적 시기 추정",
+          "changeType": "initial"
+        }
+      ],
+      "currentVersion": 1,
+      "supportedBy": ["inv-011"],
+      "involvedEntities": [1, 3, 4]
+    },
+    {
+      "id": "evt-010",
+      "text": "최민지, 카페 마감 후 퇴근",
+      "importance": "high",
+      "timelineVersions": [
+        {
+          "version": 1,
+          "updatedAt": "2026-04-01T18:00:00+09:00",
+          "updatedByEvidence": ["inv-003"],
+          "dateEstimate": {
+            "earliest": "2026-03-31T23:30:00+09:00",
+            "latest": "2026-03-31T23:50:00+09:00",
+            "confidence": "medium"
+          },
+          "day": 175,
+          "precision": "minute",
+          "changeReason": "최민지 진술",
+          "changeType": "initial"
+        },
+        {
+          "version": 2,
+          "updatedAt": "2026-04-02T10:00:00+09:00",
+          "updatedByEvidence": ["inv-003", "inv-004"],
+          "timestamp": "2026-03-31T23:40:00+09:00",
+          "precision": "minute",
+          "changeReason": "CCTV 영상으로 정확한 시간 확정",
+          "changeType": "refinement"
+        }
+      ],
+      "currentVersion": 2,
+      "supportedBy": ["inv-003", "inv-004"],
+      "involvedEntities": [4]
+    },
+    {
+      "id": "evt-011",
+      "text": "김태호 → 한도윤 부재중 전화 3회",
+      "importance": "high",
+      "timelineVersions": [
+        {
+          "version": 1,
+          "updatedAt": "2026-04-02T15:00:00+09:00",
+          "updatedByEvidence": ["inv-005"],
+          "timestamp": "2026-03-31T23:52:00+09:00",
+          "day": 176,
+          "precision": "minute",
+          "changeReason": "통신사 기록으로 확정",
+          "changeType": "initial"
+        }
+      ],
+      "currentVersion": 1,
+      "supportedBy": ["inv-005", "inv-006"],
+      "involvedEntities": [1, 5]
+    },
+    {
+      "id": "evt-012",
+      "text": "박서연-최민지 통화 (사건 당일 새벽)",
+      "importance": "high",
+      "timelineVersions": [
+        {
+          "version": 1,
+          "updatedAt": "2026-04-04T11:00:00+09:00",
+          "updatedByEvidence": ["inv-008"],
+          "timestamp": "2026-04-01T00:15:00+09:00",
+          "day": 178,
+          "precision": "minute",
+          "changeReason": "통화 기록 전체 분석으로 발견",
+          "changeType": "initial"
+        }
+      ],
+      "currentVersion": 1,
+      "supportedBy": ["inv-008"],
+      "involvedEntities": [2, 4],
+      "metadata": {
+        "duration": "2분 13초"
+      }
+    },
+    {
+      "id": "evt-013",
+      "text": "김태호 사망 추정 시각",
+      "importance": "high",
+      "timelineVersions": [
+        {
+          "version": 1,
+          "updatedAt": "2026-04-01T06:00:00+09:00",
+          "updatedByEvidence": ["inv-001"],
+          "dateEstimate": {
+            "earliest": "2026-03-31T22:00:00+09:00",
+            "latest": "2026-04-01T06:00:00+09:00",
+            "confidence": "low"
+          },
+          "day": 180,
+          "precision": "hour",
+          "changeReason": "시신 발견 시점 기준 초기 추정",
+          "changeType": "initial"
+        },
+        {
+          "version": 2,
+          "updatedAt": "2026-04-01T14:00:00+09:00",
+          "updatedByEvidence": ["inv-001", "inv-002"],
+          "timestamp": "2026-04-01T01:30:00+09:00",
+          "precision": "minute",
+          "changeReason": "부검 소견서로 정밀 추정 (01:00~02:00)",
+          "changeType": "refinement"
+        }
+      ],
+      "currentVersion": 2,
+      "supportedBy": ["inv-001", "inv-002"],
+      "involvedEntities": [1]
+    },
+    {
+      "id": "evt-014",
+      "text": "시신 발견 (수사 시작)",
+      "importance": "high",
+      "timelineVersions": [
+        {
+          "version": 1,
+          "updatedAt": "2026-04-01T06:00:00+09:00",
+          "updatedByEvidence": ["inv-001"],
+          "timestamp": "2026-04-01T06:00:00+09:00",
+          "day": 180,
+          "precision": "minute",
+          "changeReason": "첫 신고 시각",
+          "changeType": "initial"
+        }
+      ],
+      "currentVersion": 1,
+      "supportedBy": ["inv-001"],
+      "involvedEntities": [1]
+    }
+  ],
+  "evidenceLinks": [
+    { "evidenceId": "inv-001", "eventId": "evt-014", "linkType": "proves", "strength": 1.0 },
+    { "evidenceId": "inv-002", "eventId": "evt-013", "linkType": "proves", "strength": 0.9 },
+    { "evidenceId": "inv-003", "eventId": "evt-010", "linkType": "suggests", "strength": 0.7 },
+    { "evidenceId": "inv-004", "eventId": "evt-010", "linkType": "proves", "strength": 1.0 },
+    { "evidenceId": "inv-005", "eventId": "evt-011", "linkType": "proves", "strength": 1.0 },
+    { "evidenceId": "inv-005", "eventId": "evt-007", "linkType": "proves", "strength": 1.0 },
+    { "evidenceId": "inv-006", "eventId": "evt-011", "linkType": "proves", "strength": 1.0 },
+    { "evidenceId": "inv-006", "eventId": "evt-008", "linkType": "suggests", "strength": 0.8 },
+    { "evidenceId": "inv-007", "eventId": "evt-006", "linkType": "proves", "strength": 1.0 },
+    { "evidenceId": "inv-008", "eventId": "evt-012", "linkType": "proves", "strength": 1.0 },
+    { "evidenceId": "inv-008", "eventId": "evt-007", "linkType": "proves", "strength": 1.0 },
+    { "evidenceId": "inv-009", "eventId": "evt-005", "linkType": "proves", "strength": 1.0 },
+    { "evidenceId": "inv-010", "eventId": "evt-004", "linkType": "suggests", "strength": 0.6 },
+    { "evidenceId": "inv-011", "eventId": "evt-009", "linkType": "suggests", "strength": 0.7 }
+  ],
+  "config": {
+    "maxDay": 180,
+    "relationStyles": {
+      "romantic": { "color": "#ff6b9d", "dash": "", "label": "연애/호감" },
+      "friendship": { "color": "#74b9ff", "dash": "", "label": "우정" },
+      "business": { "color": "#a8e6cf", "dash": "6,3", "label": "사업/계약" },
+      "work": { "color": "#95a5a6", "dash": "4,4", "label": "업무" },
+      "conflict": { "color": "#ff4757", "dash": "", "label": "갈등/분쟁" },
+      "suspicious": { "color": "#ffa502", "dash": "2,4", "label": "의심/수상" },
+      "family": { "color": "#6c5ce7", "dash": "", "label": "가족" },
+      "custom": { "color": "#95a5a6", "dash": "4,4", "label": "기타" }
+    },
+    "theme": "auto"
+  }
+}
