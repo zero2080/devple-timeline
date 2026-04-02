@@ -8,7 +8,7 @@ function App() {
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { theme, setTheme, resolvedTheme } = useTheme('auto');
+  useTheme('auto'); // 테마 자동 적용
 
   useEffect(() => {
     DataService.loadCase('noir-cafe')

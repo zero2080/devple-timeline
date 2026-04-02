@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo, type MouseEvent as ReactMouseEvent } from "react";
 import type { Case } from '../core/models/Case';
-import type { Entity, Relation, InteractionState, GraphSize, PanState } from '../types';
+import type { Relation, InteractionState, GraphSize, PanState } from '../types';
 import { Header } from '../components/Layout/Header';
 import { Legend } from '../components/Layout/Legend';
 import { TimelineScrubber } from '../components/Timeline/TimelineScrubber';
