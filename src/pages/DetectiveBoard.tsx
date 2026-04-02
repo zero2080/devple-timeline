@@ -66,7 +66,14 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
     return () => window.removeEventListener("resize", measure);
   }, []);
 
-  const currentEdges = useMemo(() => caseData.getRelationsAtDay(currentDay), [caseData, currentDay]);
+  // 모드별 관계 데이터
+  const currentEdges = useMemo(() => {
+    if (timelineMode === 'investigation' || timelineMode === 'dual') {
+      return caseData.getDiscoveredRelationsAtDay(currentDiscoveryDay).filter(r => r.discovered);
+    }
+    return caseData.getRelationsAtDay(currentDay);
+  }, [caseData, currentDay, currentDiscoveryDay, timelineMode]);
+
   const currentEvents = useMemo(() => caseData.getEventsUpTo(currentDay), [caseData, currentDay]);
 
   const uniqueEdgeKeys = new Set<string>();

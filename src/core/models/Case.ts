@@ -87,6 +87,72 @@ export class Case {
     return this.data.snapshots[snapDay] ?? [];
   }
 
+  // ── 수사 관점: 형사가 알고 있는 관계만 ──
+  getDiscoveredRelationsAtDay(discoveryDay: number): Array<Relation & { discovered: boolean; discoveryDay: number; reliability: string }> {
+    if (!this.hasDualTimeline()) {
+      // 듀얼 타임라인 없으면 모든 관계 반환
+      return this.getRelationsAtDay(this.maxDay).map(r => ({ ...r, discovered: true, discoveryDay: 0, reliability: '확정' }));
+    }
+
+    // 해당 수사일까지 발견된 증거들
+    const discoveredEvidence = this.getInvestigationEntriesUpTo(discoveryDay);
+    
+    // 증거로 밝혀진 사건들
+    const discoveredEventIds = new Set<string>();
+    discoveredEvidence.forEach(evidence => {
+      evidence.relatedEvents.forEach(eventId => discoveredEventIds.add(eventId));
+    });
+
+    // 밝혀진 사건들에 연관된 엔티티 추출
+    const discoveredEntityPairs = new Set<string>();
+    this.eventTimeline
+      .filter(event => discoveredEventIds.has(event.id))
+      .forEach(event => {
+        if (event.involvedEntities && event.involvedEntities.length >= 2) {
+          // 모든 엔티티 쌍 조합 생성
+          for (let i = 0; i < event.involvedEntities.length; i++) {
+            for (let j = i + 1; j < event.involvedEntities.length; j++) {
+              const pair = [event.involvedEntities[i], event.involvedEntities[j]].sort().join('-');
+              discoveredEntityPairs.add(pair);
+            }
+          }
+        }
+      });
+
+    // 모든 관계를 가져와서 발견 여부 판단
+    const allRelations = this.getRelationsAtDay(this.maxDay);
+    
+    return allRelations.map(relation => {
+      const pair = [relation.source, relation.target].sort().join('-');
+      const isDiscovered = discoveredEntityPairs.has(pair);
+      
+      // 발견 시점 찾기
+      let relationDiscoveryDay = 0;
+      let reliability = '확정';
+      
+      if (isDiscovered) {
+        for (const evidence of discoveredEvidence) {
+          const relatedEvents = this.eventTimeline.filter(e => evidence.relatedEvents.includes(e.id));
+          const isRelated = relatedEvents.some(e => 
+            e.involvedEntities?.includes(relation.source) && e.involvedEntities?.includes(relation.target)
+          );
+          
+          if (isRelated) {
+            relationDiscoveryDay = Math.max(relationDiscoveryDay, evidence.discoveryDay);
+            reliability = evidence.reliability;
+          }
+        }
+      }
+
+      return {
+        ...relation,
+        discovered: isDiscovered,
+        discoveryDay: relationDiscoveryDay,
+        reliability,
+      };
+    });
+  }
+
   // ── 이벤트 조회 (특정 시점까지) - 레거시 ──
   getEventsUpTo(day: number): Event[] {
     if (this.data.events) {
