@@ -8,8 +8,7 @@ import type {
   VisualConfig,
   InvestigationEntry,
   EventEntry,
-  EvidenceLink,
-  TimelineVersion
+  EvidenceLink
 } from '../../types';
 
 /**
