@@ -1,0 +1,206 @@
+/* ══════════════════════════════════════════════
+   Theme System - Light/Dark Mode
+   ══════════════════════════════════════════════ */
+
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css');
+
+:root {
+  /* ── Fonts ── */
+  --font-primary: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", Pretendard, "Noto Sans KR", sans-serif;
+  --font-mono: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
+
+  /* ── Light Theme (기본) ── */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #e9ecef;
+  --bg-overlay: rgba(255, 255, 255, 0.95);
+
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-tertiary: #6c757d;
+  --text-inverse: #ffffff;
+
+  --border-primary: #dee2e6;
+  --border-secondary: #ced4da;
+  --border-tertiary: #adb5bd;
+
+  --accent-primary: #0066cc;
+  --accent-hover: #0052a3;
+  --accent-active: #003d7a;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+
+  /* ── Detective Theme Colors (Light) ── */
+  --detective-bg-primary: #f5f3ef;
+  --detective-bg-secondary: #e8e4dd;
+  --detective-bg-tertiary: #d4cfc4;
+  --detective-bg-overlay: rgba(245, 243, 239, 0.98);
+
+  --detective-text-primary: #2a2419;
+  --detective-text-secondary: #5a4e3b;
+  --detective-text-tertiary: #8a7e6b;
+  --detective-text-highlight: #d4a574;
+
+  --detective-border-primary: #b8a88a;
+  --detective-border-secondary: #a89878;
+  --detective-border-tertiary: #8a7e6b;
+
+  --detective-accent-primary: #c89968;
+  --detective-accent-secondary: #a8794e;
+
+  /* ── Graph Colors ── */
+  --graph-node-bg: var(--bg-tertiary);
+  --graph-node-border: var(--border-primary);
+  --graph-node-selected: var(--accent-primary);
+  --graph-edge-default: var(--border-secondary);
+
+  /* ── Relation Type Colors ── */
+  --rel-romantic: #ff6b9d;
+  --rel-friendship: #74b9ff;
+  --rel-business: #26de81;
+  --rel-work: #95a5a6;
+  --rel-conflict: #ff4757;
+  --rel-suspicious: #ffa502;
+  --rel-family: #6c5ce7;
+  --rel-custom: #95a5a6;
+}
+
+/* ── Dark Theme ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #242424;
+    --bg-tertiary: #2e2e2e;
+    --bg-overlay: rgba(26, 26, 26, 0.95);
+
+    --text-primary: #e0e0e0;
+    --text-secondary: #b0b0b0;
+    --text-tertiary: #808080;
+    --text-inverse: #1a1a1a;
+
+    --border-primary: #3a3a3a;
+    --border-secondary: #4a4a4a;
+    --border-tertiary: #5a5a5a;
+
+    --accent-primary: #3d8eff;
+    --accent-hover: #2878e8;
+    --accent-active: #1862d1;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+
+    /* ── Detective Theme Colors (Dark) ── */
+    --detective-bg-primary: #1a1510;
+    --detective-bg-secondary: #1e1912;
+    --detective-bg-tertiary: #2a2419;
+    --detective-bg-overlay: rgba(26, 21, 16, 0.98);
+
+    --detective-text-primary: #e8d9b8;
+    --detective-text-secondary: #b8a88a;
+    --detective-text-tertiary: #8a7e6b;
+    --detective-text-highlight: #ffd43b;
+
+    --detective-border-primary: #3a3225;
+    --detective-border-secondary: #4a3e2f;
+    --detective-border-tertiary: #5a4e3b;
+
+    --detective-accent-primary: #d4a574;
+    --detective-accent-secondary: #c89968;
+
+    --graph-node-bg: var(--detective-bg-tertiary);
+    --graph-node-border: var(--detective-border-primary);
+    --graph-node-selected: var(--detective-accent-primary);
+    --graph-edge-default: var(--detective-border-secondary);
+  }
+}
+
+/* ── Explicit Light/Dark Class Overrides ── */
+[data-theme="light"] {
+  color-scheme: light;
+  --bg-primary: #ffffff;
+  --text-primary: #212529;
+  /* ... (라이트 모드 변수 재정의) */
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-primary: #1a1a1a;
+  --text-primary: #e0e0e0;
+  /* ... (다크 모드 변수 재정의) */
+}
+
+/* ── Common Utilities ── */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-primary);
+  background: var(--detective-bg-primary);
+  color: var(--detective-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ── Typography ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-primary);
+  font-weight: 600;
+  margin: 0;
+  color: var(--detective-text-primary);
+}
+
+p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+code, pre {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── Scrollbar Styling (Dark Theme) ── */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--detective-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--detective-border-primary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--detective-border-secondary);
+}

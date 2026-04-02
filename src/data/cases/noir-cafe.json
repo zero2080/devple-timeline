@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "id": "2026-0401",
+    "title": "사건번호 2026-0401",
+    "subtitle": "카페 'Noir' 오너 김태호 살인사건 — 인물 관계도 분석",
+    "category": "detective",
+    "dateRange": {
+      "start": "2025-10",
+      "end": "2026-04-01"
+    },
+    "description": "카페 'Noir' 오너 김태호 살인사건의 인물 관계 변화 추적"
+  },
+  "entities": [
+    { "id": 1, "name": "김태호", "type": "person", "role": "피해자", "desc": "카페 'Noir' 오너", "color": "#e74c3c", "icon": "☠" },
+    { "id": 2, "name": "박서연", "type": "person", "role": "용의자", "desc": "전 여자친구 / 공동투자자", "color": "#f39c12", "icon": "⚠" },
+    { "id": 3, "name": "이준혁", "type": "person", "role": "용의자", "desc": "사업 경쟁자", "color": "#f39c12", "icon": "⚠" },
+    { "id": 4, "name": "최민지", "type": "person", "role": "용의자", "desc": "카페 직원 / 바리스타", "color": "#f39c12", "icon": "⚠" },
+    { "id": 5, "name": "한도윤", "type": "person", "role": "참고인", "desc": "피해자 대학 동기", "color": "#3498db", "icon": "👤" },
+    { "id": 6, "name": "정은수", "type": "person", "role": "참고인", "desc": "보험 설계사", "color": "#3498db", "icon": "👤" }
+  ],
+  "timeline": [
+    { "day": 0, "label": "6개월 전", "date": "2025.10", "title": "평온한 시기" },
+    { "day": 90, "label": "3개월 전", "date": "2026.01", "title": "균열의 시작" },
+    { "day": 150, "label": "1개월 전", "date": "2026.03", "title": "의심의 단서들" },
+    { "day": 180, "label": "사건 당일", "date": "2026.04.01", "title": "D-Day" }
+  ],
+  "snapshots": {
+    "0": [
+      { "source": 1, "target": 2, "type": "romantic", "direction": "bi", "strength": 0.9, "label": "연인" },
+      { "source": 1, "target": 2, "type": "business", "direction": "bi", "strength": 0.7, "label": "공동투자" },
+      { "source": 1, "target": 3, "type": "business", "direction": "bi", "strength": 0.6, "label": "사업 협력" },
+      { "source": 1, "target": 4, "type": "work", "direction": "uni", "strength": 0.5, "label": "고용주→직원" },
+      { "source": 1, "target": 5, "type": "friendship", "direction": "bi", "strength": 0.8, "label": "절친" },
+      { "source": 4, "target": 5, "type": "romantic", "direction": "bi", "strength": 0.3, "label": "썸" }
+    ],
+    "90": [
+      { "source": 1, "target": 2, "type": "conflict", "direction": "bi", "strength": 0.7, "label": "투자금 분쟁" },
+      { "source": 1, "target": 3, "type": "conflict", "direction": "bi", "strength": 0.8, "label": "경쟁 카페 오픈" },
+      { "source": 1, "target": 4, "type": "work", "direction": "uni", "strength": 0.5, "label": "고용주→직원" },
+      { "source": 1, "target": 5, "type": "friendship", "direction": "bi", "strength": 0.7, "label": "고민 상담" },
+      { "source": 2, "target": 3, "type": "suspicious", "direction": "uni", "strength": 0.4, "label": "접촉 시작?" },
+      { "source": 4, "target": 5, "type": "romantic", "direction": "bi", "strength": 0.5, "label": "연인" }
+    ],
+    "150": [
+      { "source": 1, "target": 2, "type": "conflict", "direction": "bi", "strength": 0.9, "label": "법적 분쟁 예고" },
+      { "source": 1, "target": 3, "type": "conflict", "direction": "uni", "strength": 0.6, "label": "위협 의심" },
+      { "source": 1, "target": 4, "type": "suspicious", "direction": "uni", "strength": 0.6, "label": "내부정보 유출?" },
+      { "source": 1, "target": 5, "type": "friendship", "direction": "bi", "strength": 0.8, "label": "유언장 언급" },
+      { "source": 1, "target": 6, "type": "business", "direction": "bi", "strength": 0.7, "label": "고액 보험 가입" },
+      { "source": 2, "target": 4, "type": "suspicious", "direction": "bi", "strength": 0.8, "label": "비밀 접촉" },
+      { "source": 2, "target": 3, "type": "suspicious", "direction": "bi", "strength": 0.6, "label": "공모 의심" },
+      { "source": 2, "target": 6, "type": "suspicious", "direction": "uni", "strength": 0.5, "label": "보험 수익자 확인" }
+    ],
+    "180": [
+      { "source": 1, "target": 2, "type": "conflict", "direction": "bi", "strength": 1.0, "label": "최후의 통화" },
+      { "source": 1, "target": 3, "type": "conflict", "direction": "uni", "strength": 0.5, "label": "알리바이 불일치" },
+      { "source": 1, "target": 4, "type": "suspicious", "direction": "uni", "strength": 0.9, "label": "마지막 목격자" },
+      { "source": 1, "target": 5, "type": "friendship", "direction": "bi", "strength": 0.8, "label": "부재중 전화 3통" },
+      { "source": 1, "target": 6, "type": "business", "direction": "uni", "strength": 0.8, "label": "사망 보험금 10억" },
+      { "source": 2, "target": 4, "type": "suspicious", "direction": "bi", "strength": 1.0, "label": "당일 만남 확인" },
+      { "source": 2, "target": 3, "type": "suspicious", "direction": "bi", "strength": 0.7, "label": "통화기록 다수" },
+      { "source": 2, "target": 6, "type": "suspicious", "direction": "uni", "strength": 0.9, "label": "보험 수익자=박서연" },
+      { "source": 4, "target": 5, "type": "romantic", "direction": "bi", "strength": 0.4, "label": "관계 흔들림" },
+      { "source": 3, "target": 6, "type": "suspicious", "direction": "uni", "strength": 0.3, "label": "같은 헬스장 회원" }
+    ]
+  },
+  "events": [
+    { "day": 0, "text": "김태호, 박서연과 카페 'Noir' 공동 투자 시작" },
+    { "day": 5, "text": "이준혁과 원두 공동구매 협력 관계" },
+    { "day": 85, "text": "박서연, 투자금 회수 요구 → 분쟁 시작" },
+    { "day": 92, "text": "이준혁, 100m 거리에 경쟁 카페 오픈" },
+    { "day": 100, "text": "박서연-이준혁 간 첫 접촉 포착 (CCTV)" },
+    { "day": 145, "text": "김태호, 10억 원 생명보험 가입 (수익자: 박서연)" },
+    { "day": 152, "text": "최민지-박서연 비밀 만남 3회 확인" },
+    { "day": 158, "text": "김태호, 한도윤에게 '유서를 써뒀다' 발언" },
+    { "day": 162, "text": "카페 매출 데이터 외부 유출 정황" },
+    { "day": 175, "text": "23:40 — 최민지, 카페 마감 후 퇴근 (마지막 목격)" },
+    { "day": 176, "text": "23:52 — 김태호→한도윤 부재중 전화 3회" },
+    { "day": 178, "text": "00:15 — 박서연-최민지 통화 2분 13초" },
+    { "day": 180, "text": "01:30 — 김태호 사망 추정 시각" },
+    { "day": 180, "text": "06:00 — 출근한 직원이 시신 발견" }
+  ],
+  "config": {
+    "maxDay": 180,
+    "relationStyles": {
+      "romantic": { "color": "#ff6b9d", "dash": "", "label": "연애/호감" },
+      "friendship": { "color": "#74b9ff", "dash": "", "label": "우정" },
+      "business": { "color": "#a8e6cf", "dash": "6,3", "label": "사업/계약" },
+      "work": { "color": "#95a5a6", "dash": "4,4", "label": "업무" },
+      "conflict": { "color": "#ff4757", "dash": "", "label": "갈등/분쟁" },
+      "suspicious": { "color": "#ffa502", "dash": "2,4", "label": "의심/수상" },
+      "family": { "color": "#6c5ce7", "dash": "", "label": "가족" },
+      "custom": { "color": "#95a5a6", "dash": "4,4", "label": "기타" }
+    },
+    "theme": "auto"
+  }
+}
