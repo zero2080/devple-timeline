@@ -10,7 +10,9 @@ import { ZoomControls } from '../components/Graph/ZoomControls';
 import { ArrowMarker } from '../components/Graph/ArrowMarker';
 import { InvestigationLog } from '../components/Sidebar/InvestigationLog';
 import { EventTimelineLog } from '../components/Sidebar/EventTimelineLog';
+import { ToastContainer } from '../components/Toast/ToastContainer';
 import { useForceSimulation } from '../hooks/useForceSimulation';
+import { useToast } from '../hooks/useToast';
 
 interface DetectiveBoardProps {
   caseData: Case;
@@ -33,8 +35,13 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
   
   const [currentDiscoveryDay, setCurrentDiscoveryDay] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const prevDiscoveryDay = useRef(0);
+  
+  // 토스트 시스템
+  const { toasts, addToast, removeToast } = useToast();
   
   const [selectedNode, setSelectedNode] = useState<number | null>(null);
+  const prevRelationsCount = useRef(0);
   const [selectedEdge, setSelectedEdge] = useState<Relation | null>(null);
   const [showLegend, setShowLegend] = useState(false);
   const [graphSize, setGraphSize] = useState<GraphSize>({ w: 700, h: 500 });
@@ -54,6 +61,14 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
     panStartY: 0,
   });
 
+  // 모드별 관계 데이터
+  const currentEdges = useMemo(() => {
+    if (timelineMode === 'investigation' || timelineMode === 'dual') {
+      return caseData.getDiscoveredRelationsAtDay(currentDiscoveryDay).filter(r => r.discovered);
+    }
+    return caseData.getRelationsAtDay(currentDay);
+  }, [caseData, currentDay, currentDiscoveryDay, timelineMode]);
+
   useEffect(() => {
     const measure = () => {
       if (containerRef.current) {
@@ -66,13 +81,65 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
     return () => window.removeEventListener("resize", measure);
   }, []);
 
-  // 모드별 관계 데이터
-  const currentEdges = useMemo(() => {
-    if (timelineMode === 'investigation' || timelineMode === 'dual') {
-      return caseData.getDiscoveredRelationsAtDay(currentDiscoveryDay).filter(r => r.discovered);
+  // 수사 일 변경 시 토스트 표시
+  useEffect(() => {
+    if (!hasDualTimeline || timelineMode === 'event') return;
+    if (prevDiscoveryDay.current === currentDiscoveryDay) return;
+    if (currentDiscoveryDay === 0) {
+      prevDiscoveryDay.current = 0;
+      return;
     }
-    return caseData.getRelationsAtDay(currentDay);
-  }, [caseData, currentDay, currentDiscoveryDay, timelineMode]);
+
+    // 새로 발견된 증거
+    const newEvidence = caseData.investigationTimeline.filter(
+      (e) => e.discoveryDay === currentDiscoveryDay
+    );
+
+    newEvidence.forEach((evidence) => {
+      const typeIcons: Record<string, string> = {
+        evidence: '📦',
+        testimony: '👤',
+        forensic: '🔬',
+        document: '📄',
+        cctv: '📹',
+        analysis: '📊',
+      };
+
+      addToast({
+        type: 'evidence',
+        icon: typeIcons[evidence.type] || '📦',
+        title: `증거 발견! (D+${evidence.discoveryDay})`,
+        message: evidence.title,
+        duration: 3000,
+      });
+    });
+
+    prevDiscoveryDay.current = currentDiscoveryDay;
+  }, [currentDiscoveryDay, hasDualTimeline, timelineMode, caseData, addToast]);
+
+  // 관계 변화 감지 (듀얼 모드)
+  useEffect(() => {
+    if (timelineMode !== 'dual') return;
+    
+    const currentCount = currentEdges.length;
+    if (prevRelationsCount.current === 0) {
+      prevRelationsCount.current = currentCount;
+      return;
+    }
+
+    if (currentCount > prevRelationsCount.current) {
+      const diff = currentCount - prevRelationsCount.current;
+      addToast({
+        type: 'relation',
+        icon: '⚠️',
+        title: '새로운 관계 발견!',
+        message: `${diff}건의 관계가 추가로 확인되었습니다.`,
+        duration: 2500,
+      });
+    }
+
+    prevRelationsCount.current = currentCount;
+  }, [currentEdges.length, timelineMode, addToast]);
 
   const currentEvents = useMemo(() => caseData.getEventsUpTo(currentDay), [caseData, currentDay]);
 
@@ -794,6 +861,9 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
           </div>
         </div>
       </div>
+      
+      {/* 토스트 */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }
