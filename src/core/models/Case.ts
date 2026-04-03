@@ -2,7 +2,8 @@ import type {
   CaseData, 
   CaseMeta, 
   Entity, 
-  Relation, 
+  Relation,
+  RelationType, 
   Event, 
   TimelinePoint, 
   VisualConfig,
@@ -74,6 +75,7 @@ export class Case {
 
   // ── 관계 조회 (특정 시점) ──
   getRelationsAtDay(day: number): Relation[] {
+    // 기본 snapshot 찾기
     const sortedDays = Object.keys(this.data.snapshots)
       .map(Number)
       .sort((a, b) => a - b);
@@ -84,7 +86,122 @@ export class Case {
       else break;
     }
 
-    return this.data.snapshots[snapDay] ?? [];
+    const baseRelations = this.data.snapshots[snapDay] ?? [];
+
+    // 이벤트 기반 동적 관계 추가
+    const dynamicRelations = this.getDynamicRelationsFromEvents(snapDay, day);
+    
+    // 병합 (기존 관계 + 동적 관계)
+    return this.mergeRelations(baseRelations, dynamicRelations);
+  }
+
+  // ── 이벤트 기반 동적 관계 생성 ──
+  private getDynamicRelationsFromEvents(fromDay: number, toDay: number): Relation[] {
+    const dynamicRelations: Relation[] = [];
+    
+    // EventEntry 사용 (듀얼 타임라인 지원 시)
+    if (this.data.eventTimeline && this.data.eventTimeline.length > 0) {
+      // EventEntry는 day 필드가 없으므로 currentVersion의 day 사용
+      const events = this.data.eventTimeline.filter((e) => {
+        const currentVer = e.timelineVersions[e.currentVersion];
+        const eventDay = currentVer?.day;
+        return eventDay !== undefined && eventDay > fromDay && eventDay <= toDay;
+      });
+
+      events.forEach((event) => {
+        if (!event.involvedEntities || event.involvedEntities.length < 2) return;
+
+        const entities = event.involvedEntities;
+        const currentVer = event.timelineVersions[event.currentVersion];
+        if (!currentVer) return;
+        
+        // 모든 엔티티 쌍 조합 생성
+        for (let i = 0; i < entities.length; i++) {
+          for (let j = i + 1; j < entities.length; j++) {
+            const source = entities[i];
+            const target = entities[j];
+
+            // 이벤트 내용 기반으로 관계 타입 추론
+            const relationType = this.inferRelationType(event.text, event.importance);
+            
+            dynamicRelations.push({
+              source,
+              target,
+              type: relationType,
+              direction: 'bi',
+              strength: event.importance === 'high' ? 0.9 : event.importance === 'medium' ? 0.6 : 0.3,
+              label: this.shortenEventText(event.text),
+            });
+          }
+        }
+      });
+    }
+    // 기존 Event 타입은 involvedEntities 필드가 없으므로 동적 관계 생성 불가
+
+    return dynamicRelations;
+  }
+
+  // ── 관계 타입 추론 (키워드 기반) ──
+  private inferRelationType(text: string, importance: string): RelationType {
+    const lowerText = text.toLowerCase();
+    
+    if (lowerText.includes('갈등') || lowerText.includes('다툼') || lowerText.includes('충돌')) {
+      return 'conflict';
+    }
+    if (lowerText.includes('의심') || lowerText.includes('수상') || lowerText.includes('미심쩍')) {
+      return 'suspicious';
+    }
+    if (lowerText.includes('연인') || lowerText.includes('사랑') || lowerText.includes('애정')) {
+      return 'romantic';
+    }
+    if (lowerText.includes('친구') || lowerText.includes('친분')) {
+      return 'friendship';
+    }
+    if (lowerText.includes('업무') || lowerText.includes('회사') || lowerText.includes('직장')) {
+      return 'work';
+    }
+    if (lowerText.includes('거래') || lowerText.includes('계약') || lowerText.includes('사업')) {
+      return 'business';
+    }
+    
+    // 중요도 높으면 의심, 낮으면 일반 접촉
+    return importance === 'high' ? 'suspicious' : 'custom';
+  }
+
+  // ── 이벤트 텍스트 축약 ──
+  private shortenEventText(text: string): string {
+    if (text.length <= 10) return text;
+    return text.substring(0, 10) + '...';
+  }
+
+  // ── 관계 병합 (중복 제거, 강도 합산) ──
+  private mergeRelations(base: Relation[], dynamic: Relation[]): Relation[] {
+    const merged = [...base];
+    const existingKeys = new Set(
+      base.map((r) => `${Math.min(r.source, r.target)}-${Math.max(r.source, r.target)}`)
+    );
+
+    dynamic.forEach((dyn) => {
+      const key = `${Math.min(dyn.source, dyn.target)}-${Math.max(dyn.source, dyn.target)}`;
+      
+      if (!existingKeys.has(key)) {
+        // 새 관계 추가
+        merged.push(dyn);
+        existingKeys.add(key);
+      } else {
+        // 기존 관계 강화 (강도 증가)
+        const existing = merged.find(
+          (r) =>
+            (r.source === dyn.source && r.target === dyn.target) ||
+            (r.source === dyn.target && r.target === dyn.source)
+        );
+        if (existing) {
+          existing.strength = Math.min(1, existing.strength + dyn.strength * 0.3);
+        }
+      }
+    });
+
+    return merged;
   }
 
   // ── 수사 관점: 형사가 알고 있는 관계만 ──
