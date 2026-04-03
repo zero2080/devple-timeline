@@ -105,8 +105,24 @@ export class Case {
       const events = this.data.eventTimeline.filter((e) => {
         const currentVer = e.timelineVersions[e.currentVersion];
         const eventDay = currentVer?.day;
-        return eventDay !== undefined && eventDay > fromDay && eventDay <= toDay;
+        
+        // day가 있으면 그걸 사용, 없으면 timestamp로 계산
+        if (eventDay !== undefined) {
+          return eventDay > fromDay && eventDay <= toDay;
+        }
+        
+        // timestamp를 day로 변환 (meta.dateRange.start 기준)
+        if (currentVer?.timestamp && this.data.meta.dateRange?.start) {
+          const startDate = new Date(this.data.meta.dateRange.start);
+          const eventDate = new Date(currentVer.timestamp);
+          const calculatedDay = Math.floor((eventDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+          return calculatedDay > fromDay && calculatedDay <= toDay;
+        }
+        
+        return false;
       });
+
+      console.log(`🔍 동적 관계 생성: fromDay=${fromDay}, toDay=${toDay}, 필터된 이벤트=${events.length}개`);
 
       events.forEach((event) => {
         if (!event.involvedEntities || event.involvedEntities.length < 2) return;
@@ -114,6 +130,8 @@ export class Case {
         const entities = event.involvedEntities;
         const currentVer = event.timelineVersions[event.currentVersion];
         if (!currentVer) return;
+        
+        console.log(`  📌 이벤트: "${event.text.substring(0, 30)}..." → 엔티티 [${entities.join(', ')}]`);
         
         // 모든 엔티티 쌍 조합 생성
         for (let i = 0; i < entities.length; i++) {
@@ -123,6 +141,8 @@ export class Case {
 
             // 이벤트 내용 기반으로 관계 타입 추론
             const relationType = this.inferRelationType(event.text, event.importance);
+            
+            console.log(`    ➕ 관계 추가: ${source}-${target} (${relationType})`);
             
             dynamicRelations.push({
               source,
@@ -135,6 +155,8 @@ export class Case {
           }
         }
       });
+      
+      console.log(`✅ 총 ${dynamicRelations.length}개 동적 관계 생성됨`);
     }
     // 기존 Event 타입은 involvedEntities 필드가 없으므로 동적 관계 생성 불가
 
