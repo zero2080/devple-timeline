@@ -305,6 +305,29 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
                   const tp = positions[edge.target];
                   if (!sp || !tp) return null;
 
+                  // 모드별 시각적 속성 결정
+                  const edgeWithDiscovery = edge as any;
+                  let edgeOpacity = 0.75;
+                  let edgeDash = "";
+                  let isNewlyDiscovered = false;
+                  
+                  if (timelineMode === 'investigation' || timelineMode === 'dual') {
+                    // 수사 모드: 신뢰도에 따라 스타일 변경
+                    if (edgeWithDiscovery.reliability === '추정') {
+                      edgeDash = "4,4"; // 점선
+                      edgeOpacity = 0.6;
+                    } else if (edgeWithDiscovery.reliability === '의심') {
+                      edgeDash = "2,4"; // 더 짧은 점선
+                      edgeOpacity = 0.5;
+                    }
+                    
+                    // 듀얼 모드: 새로 발견된 관계 강조
+                    if (timelineMode === 'dual' && edgeWithDiscovery.discoveryDay === currentDiscoveryDay) {
+                      isNewlyDiscovered = true;
+                      edgeOpacity = 1.0;
+                    }
+                  }
+
                   const style = caseData.config.relationStyles[edge.type];
                   const dx = tp.x - sp.x;
                   const dy = tp.y - sp.y;
@@ -348,10 +371,20 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
                         fill="none"
                         stroke={style.color}
                         strokeWidth={Math.max(1.5, edge.strength * 4)}
-                        strokeDasharray={style.dash}
-                        opacity={isSel ? 1 : 0.75}
+                        strokeDasharray={edgeDash || style.dash}
+                        opacity={isSel ? 1 : edgeOpacity}
                         markerEnd={edge.direction === "uni" ? `url(#arrow-${edge.type})` : undefined}
-                      />
+                      >
+                        {/* 새로 발견된 관계: 펄스 애니메이션 */}
+                        {isNewlyDiscovered && (
+                          <animate
+                            attributeName="opacity"
+                            values="1;0.3;1"
+                            dur="1.5s"
+                            repeatCount="3"
+                          />
+                        )}
+                      </path>
                       {edge.direction === "bi" && (
                         <>
                           <path
@@ -376,12 +409,32 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
                         fill={style.color}
                         fontSize={11}
                         textAnchor="middle"
-                        fontWeight={500}
-                        opacity={isSel ? 1 : 0.85}
+                        fontWeight={isNewlyDiscovered ? 700 : 500}
+                        opacity={isSel ? 1 : edgeOpacity}
                         style={{ pointerEvents: "none", fontFamily: "var(--font-primary)" }}
                       >
                         {edge.label}
+                        {timelineMode === 'investigation' && edgeWithDiscovery.reliability === '추정' && ' ?'}
                       </text>
+                      
+                      {/* 새 발견 뱃지 */}
+                      {isNewlyDiscovered && (
+                        <circle
+                          cx={mx || (x1 + x2) / 2}
+                          cy={(my || (y1 + y2) / 2) - 18}
+                          r={6}
+                          fill="#ffd43b"
+                          stroke="var(--detective-bg-primary)"
+                          strokeWidth={2}
+                        >
+                          <animate
+                            attributeName="r"
+                            values="4;8;4"
+                            dur="1.5s"
+                            repeatCount="3"
+                          />
+                        </circle>
+                      )}
                     </g>
                   );
                 })}
