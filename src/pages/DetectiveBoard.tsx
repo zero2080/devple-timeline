@@ -10,9 +10,7 @@ import { ZoomControls } from '../components/Graph/ZoomControls';
 import { ArrowMarker } from '../components/Graph/ArrowMarker';
 import { InvestigationLog } from '../components/Sidebar/InvestigationLog';
 import { EventTimelineLog } from '../components/Sidebar/EventTimelineLog';
-import { ToastContainer } from '../components/Toast/ToastContainer';
 import { useForceSimulation } from '../hooks/useForceSimulation';
-import { useToast } from '../hooks/useToast';
 
 interface DetectiveBoardProps {
   caseData: Case;
@@ -35,13 +33,13 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
   
   const [currentDiscoveryDay, setCurrentDiscoveryDay] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isRepeat, setIsRepeat] = useState(false);
   const prevDiscoveryDay = useRef(0);
   
-  // 토스트 시스템
-  const { toasts, addToast, removeToast } = useToast();
+  // 카드 애니메이션 상태
+  const [newCardIds, setNewCardIds] = useState<Set<string>>(new Set());
   
   const [selectedNode, setSelectedNode] = useState<number | null>(null);
-  const prevRelationsCount = useRef(0);
   const [selectedEdge, setSelectedEdge] = useState<Relation | null>(null);
   const [showLegend, setShowLegend] = useState(false);
   const [graphSize, setGraphSize] = useState<GraphSize>({ w: 700, h: 500 });
@@ -81,65 +79,33 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
     return () => window.removeEventListener("resize", measure);
   }, []);
 
-  // 수사 일 변경 시 토스트 표시
+  // 수사 일 변경 시 카드 애니메이션
   useEffect(() => {
     if (!hasDualTimeline || timelineMode === 'event') return;
     if (prevDiscoveryDay.current === currentDiscoveryDay) return;
     if (currentDiscoveryDay === 0) {
       prevDiscoveryDay.current = 0;
+      setNewCardIds(new Set());
       return;
     }
 
-    // 새로 발견된 증거
+    // 새로 발견된 증거 ID 추가
     const newEvidence = caseData.investigationTimeline.filter(
       (e) => e.discoveryDay === currentDiscoveryDay
     );
 
+    const newIds = new Set<string>();
     newEvidence.forEach((evidence) => {
-      const typeIcons: Record<string, string> = {
-        evidence: '📦',
-        testimony: '👤',
-        forensic: '🔬',
-        document: '📄',
-        cctv: '📹',
-        analysis: '📊',
-      };
-
-      addToast({
-        type: 'evidence',
-        icon: typeIcons[evidence.type] || '📦',
-        title: `증거 발견! (D+${evidence.discoveryDay})`,
-        message: evidence.title,
-        duration: 3000,
-      });
+      newIds.add(evidence.id);
     });
+    
+    setNewCardIds(newIds);
+    
+    // 1초 후 애니메이션 제거
+    setTimeout(() => setNewCardIds(new Set()), 1000);
 
     prevDiscoveryDay.current = currentDiscoveryDay;
-  }, [currentDiscoveryDay, hasDualTimeline, timelineMode, caseData, addToast]);
-
-  // 관계 변화 감지 (듀얼 모드)
-  useEffect(() => {
-    if (timelineMode !== 'dual') return;
-    
-    const currentCount = currentEdges.length;
-    if (prevRelationsCount.current === 0) {
-      prevRelationsCount.current = currentCount;
-      return;
-    }
-
-    if (currentCount > prevRelationsCount.current) {
-      const diff = currentCount - prevRelationsCount.current;
-      addToast({
-        type: 'relation',
-        icon: '⚠️',
-        title: '새로운 관계 발견!',
-        message: `${diff}건의 관계가 추가로 확인되었습니다.`,
-        duration: 2500,
-      });
-    }
-
-    prevRelationsCount.current = currentCount;
-  }, [currentEdges.length, timelineMode, addToast]);
+  }, [currentDiscoveryDay, hasDualTimeline, timelineMode, caseData]);
 
   const currentEvents = useMemo(() => caseData.getEventsUpTo(currentDay), [caseData, currentDay]);
 
@@ -327,6 +293,8 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
               onDiscoveryDayChange={setCurrentDiscoveryDay}
               isPlaying={isPlaying}
               onPlayToggle={() => setIsPlaying(!isPlaying)}
+              isRepeat={isRepeat}
+              onRepeatToggle={() => setIsRepeat(!isRepeat)}
             />
           )}
         </div>
@@ -638,6 +606,7 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
               <InvestigationLog
                 entries={caseData.investigationTimeline}
                 currentDiscoveryDay={currentDiscoveryDay}
+                newCardIds={newCardIds}
               />
             )}
 
@@ -862,8 +831,7 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
         </div>
       </div>
       
-      {/* 토스트 */}
-      <ToastContainer toasts={toasts} onClose={removeToast} />
+
     </div>
   );
 }

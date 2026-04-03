@@ -6,6 +6,8 @@ interface InvestigationPlayerProps {
   onDiscoveryDayChange: (day: number) => void;
   isPlaying: boolean;
   onPlayToggle: () => void;
+  isRepeat: boolean;
+  onRepeatToggle: () => void;
 }
 
 export function InvestigationPlayer({
@@ -14,6 +16,8 @@ export function InvestigationPlayer({
   onDiscoveryDayChange,
   isPlaying,
   onPlayToggle,
+  isRepeat,
+  onRepeatToggle,
 }: InvestigationPlayerProps) {
   const [speed, setSpeed] = useState(1); // 1x, 2x, 4x
 
@@ -21,13 +25,21 @@ export function InvestigationPlayer({
     if (!isPlaying) return;
 
     const interval = setInterval(() => {
-      onDiscoveryDayChange(
-        currentDiscoveryDay >= maxDiscoveryDay ? 0 : currentDiscoveryDay + 1
-      );
+      if (currentDiscoveryDay >= maxDiscoveryDay) {
+        if (isRepeat) {
+          // 반복 모드: 처음으로 돌아가기
+          onDiscoveryDayChange(0);
+        } else {
+          // 반복 모드 아님: 정지
+          onPlayToggle();
+        }
+      } else {
+        onDiscoveryDayChange(currentDiscoveryDay + 1);
+      }
     }, 2000 / speed); // 기본 2초, 속도에 따라 조절
 
     return () => clearInterval(interval);
-  }, [isPlaying, currentDiscoveryDay, maxDiscoveryDay, speed, onDiscoveryDayChange]);
+  }, [isPlaying, currentDiscoveryDay, maxDiscoveryDay, speed, isRepeat, onDiscoveryDayChange, onPlayToggle]);
 
   return (
     <div
@@ -60,6 +72,27 @@ export function InvestigationPlayer({
         title={isPlaying ? '일시정지' : '재생'}
       >
         {isPlaying ? '⏸' : '▶'}
+      </button>
+
+      {/* 반복 버튼 */}
+      <button
+        onClick={onRepeatToggle}
+        style={{
+          width: 32,
+          height: 32,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: isRepeat ? '#26de8144' : 'var(--detective-bg-secondary)',
+          border: `1px solid ${isRepeat ? '#26de81' : 'var(--detective-border-secondary)'}`,
+          borderRadius: 4,
+          cursor: 'pointer',
+          fontSize: 13,
+          color: isRepeat ? '#26de81' : 'var(--detective-text-tertiary)',
+        }}
+        title={isRepeat ? '반복 재생 ON' : '반복 재생 OFF'}
+      >
+        🔁
       </button>
 
       {/* 수사일 표시 */}
