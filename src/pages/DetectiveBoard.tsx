@@ -23,6 +23,7 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
   
   // 사건 타임라인 (기존)
   const [currentDay, setCurrentDay] = useState(0);
+  const prevDay = useRef(0);
   
   // 수사 타임라인 (새로 추가)
   const maxDiscoveryDay = useMemo(() => {
@@ -36,8 +37,10 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
   const [isRepeat, setIsRepeat] = useState(false);
   const prevDiscoveryDay = useRef(0);
   
-  // 카드 애니메이션 상태
+  // 카드 애니메이션 상태 (수사 모드)
   const [newCardIds, setNewCardIds] = useState<Set<string>>(new Set());
+  // 카드 애니메이션 상태 (사건 모드)
+  const [newEventIds, setNewEventIds] = useState<Set<number>>(new Set());
   
   const [selectedNode, setSelectedNode] = useState<number | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Relation | null>(null);
@@ -106,6 +109,36 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
 
     prevDiscoveryDay.current = currentDiscoveryDay;
   }, [currentDiscoveryDay, hasDualTimeline, timelineMode, caseData]);
+
+  // 사건 타임라인 변경 시 카드 애니메이션
+  useEffect(() => {
+    if (timelineMode !== 'event') return;
+    if (prevDay.current === currentDay) return;
+    if (currentDay === 0) {
+      prevDay.current = 0;
+      setNewEventIds(new Set());
+      return;
+    }
+
+    // 새로 추가된 이벤트 (이전 day와 현재 day 비교)
+    const prevEvents = caseData.getEventsUpTo(prevDay.current);
+    const currentEvents = caseData.getEventsUpTo(currentDay);
+    
+    const newIds = new Set<number>();
+    currentEvents.forEach((event) => {
+      if (!prevEvents.find((e) => e.day === event.day && e.text === event.text)) {
+        // 간단히 day를 ID로 사용 (실제로는 고유 ID가 있어야 함)
+        newIds.add(event.day);
+      }
+    });
+    
+    setNewEventIds(newIds);
+    
+    // 1초 후 애니메이션 제거
+    setTimeout(() => setNewEventIds(new Set()), 1000);
+
+    prevDay.current = currentDay;
+  }, [currentDay, timelineMode, caseData]);
 
   const currentEvents = useMemo(() => caseData.getEventsUpTo(currentDay), [caseData, currentDay]);
 
@@ -788,26 +821,46 @@ export default function DetectiveBoard({ caseData }: DetectiveBoardProps) {
                       해당 시점 기록 없음
                     </div>
                   )}
-                  {[...currentEvents].reverse().map((ev, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        fontSize: 11,
-                        color: "var(--detective-text-secondary)",
-                        padding: "6px 8px",
-                        marginBottom: 4,
-                        borderRadius: 4,
-                        background: "var(--detective-bg-tertiary)",
-                        borderLeft: "2px solid #ffa50244",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      <span style={{ color: "#ffa502", fontSize: 9, marginRight: 6, fontFamily: "var(--font-mono)" }}>
-                        D-{caseData.maxDay - ev.day}
-                      </span>
-                      {ev.text}
-                    </div>
-                  ))}
+                  {[...currentEvents].reverse().map((ev, i) => {
+                    const isNew = newEventIds.has(ev.day);
+                    return (
+                      <div
+                        key={i}
+                        style={{
+                          fontSize: 11,
+                          color: "var(--detective-text-secondary)",
+                          padding: "6px 8px",
+                          marginBottom: 4,
+                          borderRadius: 4,
+                          background: isNew ? "#ffa50244" : "var(--detective-bg-tertiary)",
+                          borderLeft: `2px solid #ffa502${isNew ? '' : '44'}`,
+                          lineHeight: 1.5,
+                          transform: isNew ? 'scale(1.02)' : 'scale(1)',
+                          transition: 'all 0.3s ease-out',
+                          animation: isNew ? 'slideIn 0.5s ease-out' : undefined,
+                        }}
+                      >
+                        {isNew && (
+                          <style>{`
+                            @keyframes slideIn {
+                              from {
+                                opacity: 0;
+                                transform: translateX(20px) scale(0.95);
+                              }
+                              to {
+                                opacity: 1;
+                                transform: translateX(0) scale(1.02);
+                              }
+                            }
+                          `}</style>
+                        )}
+                        <span style={{ color: "#ffa502", fontSize: 9, marginRight: 6, fontFamily: "var(--font-mono)" }}>
+                          D-{caseData.maxDay - ev.day}
+                        </span>
+                        {ev.text}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {!person && !selectedEdge && (
